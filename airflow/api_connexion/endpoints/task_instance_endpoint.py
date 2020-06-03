@@ -17,16 +17,28 @@
 
 # TODO(mik-laj): We have to implement it.
 #     Do you want to help? Please look at: https://github.com/apache/airflow/issues/8132
+from airflow.utils.session import provide_session
+from airflow.models import TaskInstance, DagRun
+from airflow.api_connexion.schemas import task_instance_schema
 
 
-def get_task_instance():
+@provide_session
+def get_task_instance(dag_id, dag_run_id, task_id, session):
     """
     Get a task instance
     """
+    query = session.query(TaskInstance, DagRun)
+    task_instance = query.filter(
+        TaskInstance.dag_id == dag_id,
+        TaskInstance.task_id == task_id
+    ).filter(
+        DagRun.id == dag_run_id,
+    )
     raise NotImplementedError("Not implemented yet.")
 
 
-def get_task_instances():
+@provide_session
+def get_task_instances(session):
     """
     Get list of task instances of DAG.
     """
