@@ -19,8 +19,10 @@
 #     Do you want to help? Please look at: https://github.com/apache/airflow/issues/8132
 from airflow.utils.session import provide_session
 from airflow.models import TaskInstance, DagRun
-from airflow.api_connexion.schemas import task_instance_schema
-
+from airflow.api_connexion.schemas.task_instance_schema import task_instance_schema
+from airflow.api_connexion import parameters
+from flask import request
+from functools import reduce
 
 @provide_session
 def get_task_instance(dag_id, dag_run_id, task_id, session):
@@ -33,16 +35,42 @@ def get_task_instance(dag_id, dag_run_id, task_id, session):
         TaskInstance.task_id == task_id
     ).filter(
         DagRun.id == dag_run_id,
-    )
-    raise NotImplementedError("Not implemented yet.")
+    ).one_or_none()
+    if task_instance is None:
+        return response_404()
+    return task_instance_schema.dump(task_instance)
 
 
 @provide_session
-def get_task_instances(session):
+def get_task_instances(dag_id, dag_run_id, session):
     """
     Get list of task instances of DAG.
     """
-    raise NotImplementedError("Not implemented yet.")
+    params = [
+        parameters.FilterExecutionDateGTE,
+        parameters.FilterExecutionDateLTE,
+        parameters.FilterStartDateGTE,
+        parameters.FilterExecutionDateLTE,
+        parameters.FilterStartDateGTE,
+        parameters.FilterStartDateLTE,
+        parameters.FilterEndDateGTE,
+        parameters.FilterEndDateLTE,
+        parameters.FilterDurationGTE,
+        parameters.FilterDurationLTE,
+        parameters.FilterState,
+        parameters.FilterPool,
+        parameters.FilterQueue
+    ]
+    task_instance_filters = reduce(lambda p, cur: cur.update({p: request.args.get(p)}), params, {})
+
+    query = session.query(TaskInstance, DagRun)
+    query = query.filter(
+        TaskInstance.dag_id == dag_id,
+        DagRun.id == dag_run_id,
+    )
+    for attr, value in task_instance_filters.iteritems():
+        query = query.filter(getattr(TaskInstance, attr) == value)
+    task_instances = query.all()
 
 
 def get_task_instances_batch():
