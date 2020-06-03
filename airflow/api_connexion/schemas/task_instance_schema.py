@@ -43,7 +43,7 @@ class TaskInstanceSchema(SQLAlchemySchema):
     Schema for a TaskInstance
     """
     class Meta:
-            """
+        """
         Meta
         """
         model = TaskInstance
