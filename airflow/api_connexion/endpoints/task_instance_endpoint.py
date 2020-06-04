@@ -61,15 +61,15 @@ def get_task_instances(dag_id, dag_run_id, session):
         parameters.FilterPool,
         parameters.FilterQueue
     ]
-    task_instance_filters = reduce(lambda p, cur: cur.update({p: request.args.get(p)}), params, {})
+    #task_instance_filters = reduce(lambda p, cur: cur.update({p: request.args.get(p)}), params, {})
 
     query = session.query(TaskInstance, DagRun)
     query = query.filter(
         TaskInstance.dag_id == dag_id,
         DagRun.id == dag_run_id,
     )
-    for attr, value in task_instance_filters.iteritems():
-        query = query.filter(getattr(TaskInstance, attr) == value)
+    for param in params:
+        query = query.filter(getattr(TaskInstance, param) == request.args.get(param))
     task_instances = query.all()
 
 
