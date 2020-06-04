@@ -56,7 +56,7 @@ class TaskInstanceSchema(SQLAlchemySchema):
     end_date = auto_field()
     duration = auto_field()
     state = auto_field() #Refs TaskState which is an enum
-    try_number = auto_field()
+    try_number = auto_field("_try_number")
     max_tries = auto_field()
     hostname = auto_field()
     unixname = auto_field()

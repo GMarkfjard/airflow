@@ -17,13 +17,13 @@
 
 # TODO(mik-laj): We have to implement it.
 #     Do you want to help? Please look at: https://github.com/apache/airflow/issues/8132
+import operator
+from flask import request
 from airflow.utils.session import provide_session
 from airflow.models import TaskInstance, DagRun
-from airflow.api_connexion.schemas.task_instance_schema import task_instance_schema, task_instance_collection_schema
+from airflow.api_connexion.schemas.task_instance_schema\
+    import task_instance_schema, task_instance_collection_schema
 from airflow.api_connexion import parameters
-from flask import request
-from functools import reduce
-import operator
 
 @provide_session
 def get_task_instance(dag_id, dag_run_id, task_id, session):
@@ -38,7 +38,7 @@ def get_task_instance(dag_id, dag_run_id, task_id, session):
         DagRun.id == dag_run_id,
     ).one_or_none()
     if task_instance is None:
-        return response_404()
+        return response_404 #TODO(Gabriel): Implement and discuss solution for handling
     return task_instance_schema.dump(task_instance)
 
 
