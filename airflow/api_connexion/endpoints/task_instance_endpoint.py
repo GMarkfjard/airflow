@@ -47,7 +47,7 @@ def get_task_instances(dag_id, dag_run_id, session):
     """
     Get list of task instances of DAG.
     """
-    params = {
+    params = { #TODO(Gabriel) Look this over, not sure if it will work at all.
         parameters.FilterExecutionDateGTE: (TaskInstance.execution_date, operator.ge),
         parameters.FilterExecutionDateLTE: (TaskInstance.execution_date, operator.le),
         parameters.FilterStartDateGTE: (TaskInstance.start_date, operator.ge),
