@@ -15,6 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+Offset = "offset"
+Limit = "limit"
 DAGID = "DAGID"
 DAGRunID = "DAGRunID"
 FilterExecutionDateGTE = "FilterExecutionDateGTE"

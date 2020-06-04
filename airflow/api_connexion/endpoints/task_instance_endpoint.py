@@ -72,6 +72,10 @@ def get_task_instances(dag_id, dag_run_id, session):
         if value is not None:
             query = query.filter(op(field, param))
 
+    offset = request.args.get(parameters.Offset, 0)
+    limit = request.args.get(parameters.Limit, 100)
+    query.offset(offset).limit(limit)
+
     task_instances = query.all()
     return task_instance_collection_schema.\
         dump(task_instances=task_instances, total_entries=len(task_instances))
