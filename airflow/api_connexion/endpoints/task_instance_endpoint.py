@@ -19,7 +19,7 @@
 #     Do you want to help? Please look at: https://github.com/apache/airflow/issues/8132
 from airflow.utils.session import provide_session
 from airflow.models import TaskInstance, DagRun
-from airflow.api_connexion.schemas.task_instance_schema import task_instance_schema
+from airflow.api_connexion.schemas.task_instance_schema import task_instance_schema, task_instance_collection_schema
 from airflow.api_connexion import parameters
 from flask import request
 from functools import reduce
@@ -71,8 +71,10 @@ def get_task_instances(dag_id, dag_run_id, session):
         value = request.args.get(param)
         if value is not None:
             query = query.filter(op(field, param))
-            
+
     task_instances = query.all()
+    return task_instance_collection_schema.\
+        dump(task_instances=task_instances, total_entries=len(task_instances))
 
 
 def get_task_instances_batch():

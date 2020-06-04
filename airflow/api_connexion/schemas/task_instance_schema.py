@@ -16,7 +16,8 @@
 # under the License.
 
 from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
-from marshmallow_sqlalchemy.fields import Nested
+from marshmallow import Schema
+from marshmallow.fields import (Nested, List, Int)
 from airflow.models import (TaskInstance, SlaMiss)
 
 class SlaMissSchema(SQLAlchemySchema):
@@ -68,4 +69,13 @@ class TaskInstanceSchema(SQLAlchemySchema):
     executor_config = auto_field()
     sla_miss = Nested(SlaMissSchema)
 
+class TaskInstanceCollectionSchema(Schema):
+    """
+    Task instance collection schema
+    """
+
+    task_instances = List(Nested(TaskInstance))
+    total_entries = Int()
+
 task_instance_schema = TaskInstanceSchema()
+task_instance_collection_schema = TaskInstanceCollectionSchema()
