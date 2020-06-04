@@ -23,6 +23,7 @@ from airflow.api_connexion.schemas.task_instance_schema import task_instance_sch
 from airflow.api_connexion import parameters
 from flask import request
 from functools import reduce
+import operator
 
 @provide_session
 def get_task_instance(dag_id, dag_run_id, task_id, session):
@@ -46,21 +47,19 @@ def get_task_instances(dag_id, dag_run_id, session):
     """
     Get list of task instances of DAG.
     """
-    params = [
-        parameters.FilterExecutionDateGTE,
-        parameters.FilterExecutionDateLTE,
-        parameters.FilterStartDateGTE,
-        parameters.FilterExecutionDateLTE,
-        parameters.FilterStartDateGTE,
-        parameters.FilterStartDateLTE,
-        parameters.FilterEndDateGTE,
-        parameters.FilterEndDateLTE,
-        parameters.FilterDurationGTE,
-        parameters.FilterDurationLTE,
-        parameters.FilterState,
-        parameters.FilterPool,
-        parameters.FilterQueue
-    ]
+    params = {
+        parameters.FilterExecutionDateGTE: (TaskInstance.execution_date, operator.ge),
+        parameters.FilterExecutionDateLTE: (TaskInstance.execution_date, operator.le),
+        parameters.FilterStartDateGTE: (TaskInstance.start_date, operator.ge),
+        parameters.FilterStartDateLTE: (TaskInstance.start_date, operator.le),
+        parameters.FilterEndDateGTE: (TaskInstance.end_date, operator.ge),
+        parameters.FilterEndDateLTE: (TaskInstance.end_date, operator.le),
+        parameters.FilterDurationGTE: (TaskInstance.duration, operator.ge),
+        parameters.FilterDurationLTE: (TaskInstance.duration, operator.le),
+        parameters.FilterState: (TaskInstance.state, operator.eq),
+        parameters.FilterPool: (TaskInstance.pool, operator.eq),
+        parameters.FilterQueue: (TaskInstance.queue, operator.eq)
+    }
     #task_instance_filters = reduce(lambda p, cur: cur.update({p: request.args.get(p)}), params, {})
 
     query = session.query(TaskInstance, DagRun)
@@ -68,8 +67,11 @@ def get_task_instances(dag_id, dag_run_id, session):
         TaskInstance.dag_id == dag_id,
         DagRun.id == dag_run_id,
     )
-    for param in params:
-        query = query.filter(getattr(TaskInstance, param) == request.args.get(param))
+    for (param, (field, op)) in params.items():
+        value = request.args.get(param)
+        if value is not None:
+            query = query.filter(op(field, param))
+            
     task_instances = query.all()
 
 
